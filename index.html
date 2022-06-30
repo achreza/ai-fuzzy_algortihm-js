@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>Fuzzy - Kelayakan Pemilihan Jurusan</title>
+	<link rel="stylesheet" href="css/bootstrap.min.css">
+	
+</head>
+<body>
+	<nav class="navbar navbar-default">
+		<a href="" class="navbar-brand">Fuzzy : Kelayakan Pemilihan Jurusan</a>
+	</nav>
+	<div class="container">
+		<div class="form-group">
+			<label for="">Nilai (0-100)</label>
+			<input type="text" id="inNilai" class="form-control">
+		</div>
+		<div class="form-group">
+			<label for="">Minat (1-10)</label>
+			<input type="text" id="inMinat" class="form-control">
+		</div>
+		<div class="form-group">
+			<label for="">Bakat (1-10)</label>
+			<input type="text" id="inBakat" class="form-control">
+		</div>
+		<div class="form-group">
+			<button class="btn btn-primary btn-block" id="btnProses">Proses</button>
+		</div>
+
+		<div id="divOut"></div>
+	</div>
+	<script src="js/jquery.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script type="text/javascript">
+		function inDiv(s){
+			return ("<div>"+ s +"</div>");
+		}
+
+		function lbDiv(lbl,s){
+			return ('<div class="label label-'+lbl+'">'+ s +'</div>');
+		}
+
+		function alDiv(lbl,s){
+			return ('<div class="alert alert-'+ lbl +'">'+ s +'</div>');
+		}
+
+		var linier_turun = function(va,vb){
+			this.a = va;
+			this.b = vb;
+			this.u = function(x){
+				var a = this.a;
+				var b = this.b;	
+				var y = 0;
+				if((x < a)) y = 1;
+				else if(( x >= a) && (x <= b)) y = (b-x)/(b-a);
+				else if(( x > b)) y = 0;
+				return y;
+			}
+		}
+		var linier_naik = function(va,vb){
+			this.a = va;
+			this.b = vb;
+			this.u = function(x){
+				var a = this.a;
+				var b = this.b;	
+				var y = 0;
+				if((x < a)) y = 0;
+				else if(( x >= a) && (x <= b)) y = (x-a)/(b-a);
+				else if(( x > b)) y =1;
+				return y;
+			}
+		}
+		var segitiga = function(va,vb,vc){
+			this.a = va;
+			this.b = vb;
+			this.c = vc;
+			this.u = function(x){
+				var a = this.a;
+				var b = this.b;	
+				var c = this.c;	
+				var y = 0;
+				if((x < a) || (x > c )) y = 0;
+				else if(( x >= a) && (x <= b)) y = (x-a)/(b-a);
+				else if(( x > b) && (x <=c )) y = (c-x)/(c-b);
+				return y;
+			}
+		}
+		
+		var trapesium = function(va,vb,vc,vd){
+			this.a = va;
+			this.b = vb;
+			this.c = vc;
+			this.d = vd;
+			this.u = function(x){
+				var a = this.a;
+				var b = this.b;
+				var c = this.c;
+				var d = this.d;
+				var y = 0;
+				if(( x < a) || (x > d)) y = 0;
+				else if(( x >= a) && ( x <= b)) y = (x-a)/(x-b);
+				else if(( x > b) && ( x < c)) y = 1;
+				else if(( x >= c) && ( x <= d)) y = (d-x)/(d-c);
+				return y;
+			}
+		}
+
+		function mf_Nilai(x){
+			var buruk = new linier_turun(10,40);
+			var cukup = new segitiga(30,50,70);
+			var bagus = new linier_naik(60,80);
+			return {
+				"buruk" : buruk.u(x),
+				"cukup" : cukup.u(x),
+				"bagus" : bagus.u(x),
+			};
+		}
+		function mf_Minat(x){
+			var rendah = new linier_turun(1,3);
+			var sedang = new segitiga(2,4,6);
+			var tinggi = new linier_naik(5,8);
+			return {
+				"rendah" : rendah.u(x),
+				"sedang" : sedang.u(x),
+				"tinggi" : tinggi.u(x)
+			};
+		}
+		function mf_Bakat(x){
+			var tidakberbakat = new linier_turun(1,4);
+			var biasa = new segitiga(3,5,7);
+			var berbakat = new linier_naik(6,8);
+			return {
+				"tidakberbakat": tidakberbakat.u(x),
+				"biasa": biasa.u(x),
+				"berbakat": berbakat.u(x),			
+			};
+		}
+		function mf_kelayakan(x){
+			var rendah = new linier_turun(50,80);
+			var tinggi = new linier_naik(50,80);
+			return {
+				"rendah" : rendah.u(x),
+				"tinggi" : tinggi.u(x)
+			};
+		}
+		function mf_kelayakan_singleton(){
+			return {
+				"rendah" : 50,
+				"tinggi" : 80
+			};
+		}
+		function fmin(a,b){
+			return Math.min(a,b);
+		}
+		function fmax(arr){
+			var a = 0;
+			for(var i in arr){
+				a = Math.max(a,arr[i]);
+			}
+			return a;
+		}
+		function fmaxmin(a,b,c,d){
+			return Math.max(Math.min(a,b),Math.min(c,d));
+		}
+		function fcog(a,b){
+			for(var i = 0; i<i; i+=10){
+
+			}
+		}
+		function klik_proses(){
+				var nilai= parseFloat($("#inNilai").val());
+				console.log('nilai : '+nilai);
+				nilai = mf_Nilai(nilai);
+				console.log(nilai);
+				var minat = parseFloat($("#inMinat").val());
+				console.log('Minat : '+minat);
+				minat = mf_Minat(minat);
+				console.log(minat);
+				var bakat = parseFloat($("#inBakat").val());
+				console.log('Bakat : ' + bakat);
+				bakat = mf_Bakat(bakat);
+				console.log(bakat);
+				var rendah = [];
+				var tinggi = [];
+
+				//aturan
+				//1
+				rendah.push(fmin(nilai.buruk,minat.rendah,bakat.tidakberbakat));
+				rendah.push(fmin(nilai.buruk,minat.rendah,bakat.biasa));
+				rendah.push(fmin(nilai.buruk,minat.rendah, bakat.berbakat));
+				//4
+				rendah.push(fmin(nilai.buruk, minat.sedang, bakat.tidakberbakat));
+				rendah.push(fmin(nilai.buruk, minat.sedang, bakat.biasa));
+				rendah.push(fmin(nilai.buruk, minat.sedang, bakat.berbakat));
+				//7
+				rendah.push(fmin(nilai.buruk, minat.tinggi, bakat.tidakberbakat));
+				rendah.push(fmin(nilai.buruk, minat.tinggi, bakat.biasa));
+				rendah.push(fmin(nilai.buruk, minat.tinggi, bakat.berbakat));
+				//10
+				rendah.push(fmin(nilai.cukup, minat.rendah, bakat.tidakberbakat));
+				rendah.push(fmin(nilai.cukup, minat.rendah, bakat.biasa));
+				rendah.push(fmin(nilai.cukup, minat.rendah, bakat.berbakat));
+				//13
+				rendah.push(fmin(nilai.cukup, minat.sedang, bakat.tidakberbakat));
+				rendah.push(fmin(nilai.cukup, minat.sedang, bakat.biasa));
+				tinggi.push(fmin(nilai.cukup, minat.sedang, bakat.berbakat));
+				//16
+				rendah.push(fmin(nilai.cukup, minat.tinggi, bakat.tidakberbakat));
+				rendah.push(fmin(nilai.cukup, minat.tinggi, bakat.biasa));
+				tinggi.push(fmin(nilai.cukup, minat.tinggi, bakat.berbakat));
+				//19
+				rendah.push(fmin(nilai.bagus, minat.rendah, bakat.tidakberbakat));
+				rendah.push(fmin(nilai.bagus, minat.rendah, bakat.biasa));
+				rendah.push(fmin(nilai.bagus, minat.rendah, bakat.berbakat));
+				//22
+				rendah.push(fmin(nilai.bagus, minat.sedang, bakat.tidakberbakat));
+				tinggi.push(fmin(nilai.bagus, minat.sedang, bakat.biasa));
+				tinggi.push(fmin(nilai.bagus, minat.sedang, bakat.berbakat));
+				//25
+				tinggi.push(fmin(nilai.bagus, minat.tinggi, bakat.tidakberbakat));
+				tinggi.push(fmin(nilai.bagus, minat.tinggi, bakat.biasa));	
+				tinggi.push(fmin(nilai.bagus, minat.tinggi, bakat.berbakat));
+
+				tinggi = fmax(tinggi);
+				rendah = fmax(rendah);
+				
+				//mamdani
+				var sa = 0;
+				var sb = 0;
+				var aa = 10;
+				for(var i = aa; i <= 100; i+=aa){
+					layak = mf_kelayakan(i);
+					c = fmaxmin(layak.rendah, rendah, layak.tinggi, tinggi);
+					sa += i * c;
+					sb += c;
+				}
+				var mm = sa/sb;
+
+				console.log('layak rendah : '+rendah);
+				console.log('layak tinggi : '+tinggi);
+				console.log('kelayakan mamdani : '+mm);
+
+				//singleton sugeno
+				layak = mf_kelayakan_singleton();
+				var ss = (layak.rendah * rendah) + (layak.tinggi * tinggi);
+				ss = ss / (rendah+tinggi);
+				console.log('kelayakan sugeno : '+ss);
+
+				var str = '<hr>';
+				str += '<h1> Hasil : </h1>';
+				str += alDiv('info','kelayakan mamdani : '+mm);
+				str += alDiv('warning','kelayakan sugeno singleton : '+ss);
+
+				$("#divOut").html("");
+				$("#divOut").html(str);
+			}
+				$(function(){
+					console.log('ready');
+					$("#btnProses").click(klik_proses);
+				});
+			
+		
+	
+	</script>
+</body>
+</html>
